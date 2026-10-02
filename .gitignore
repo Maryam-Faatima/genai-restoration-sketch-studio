@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+/data/
+checkpoints/
+wandb/
+*.pt
+*.pth
+node_modules/
+.env
+
+# Datasets and archives
+FS2K/
+FS2K_extracted/
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.npy
+
+# Visual artifacts and outputs
+check_grid.png
+outputs/
+results/
