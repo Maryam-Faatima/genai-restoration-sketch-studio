@@ -120,7 +120,7 @@ def apply_corruption(img, p):
         return out
     if t == "blur":
         k = p["kernel"]
-        return TF.gaussian_blur(out, [k, k], [p["sigma"], p["sigma"]])
+        return TF.gaussian_blur(out, [k, k], [p["sigma"], p["sigma"]]).clamp(0, 1)
     if t == "occlusion":
         for x, y, w, h in p["rects"]:
             out[:, y:y + h, x:x + w] = 0.0
