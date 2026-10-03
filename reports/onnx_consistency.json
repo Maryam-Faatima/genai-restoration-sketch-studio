@@ -1,0 +1,82 @@
+{
+  "task1_universal": {
+    "file": "task1_universal.onnx",
+    "size_mb": 10.2,
+    "max_abs_diff": {
+      "restored": 1.0579824447631836e-06
+    },
+    "max_abs_diff_batch1": 4.76837158203125e-07,
+    "cpu_ms_per_image": 18.0,
+    "tolerance": 0.001,
+    "pass": true
+  },
+  "task2_classifier": {
+    "file": "task2_classifier.onnx",
+    "size_mb": 1.18,
+    "max_abs_diff": {
+      "probs": 2.444721758365631e-09
+    },
+    "max_abs_diff_batch1": 2.6193447411060333e-10,
+    "cpu_ms_per_image": 4.0,
+    "tolerance": 0.0001,
+    "pass": true,
+    "argmax_agreement": 1.0
+  },
+  "task2_spec_salt": {
+    "file": "task2_spec_salt.onnx",
+    "size_mb": 10.07,
+    "max_abs_diff": {
+      "restored": 6.854534149169922e-07
+    },
+    "max_abs_diff_batch1": 5.960464477539062e-07,
+    "cpu_ms_per_image": 19.7,
+    "tolerance": 0.001,
+    "pass": true
+  },
+  "task2_spec_blur": {
+    "file": "task2_spec_blur.onnx",
+    "size_mb": 10.07,
+    "max_abs_diff": {
+      "restored": 5.364418029785156e-07
+    },
+    "max_abs_diff_batch1": 4.470348358154297e-07,
+    "cpu_ms_per_image": 19.8,
+    "tolerance": 0.001,
+    "pass": true
+  },
+  "task2_spec_occ": {
+    "file": "task2_spec_occ.onnx",
+    "size_mb": 10.07,
+    "max_abs_diff": {
+      "restored": 8.344650268554688e-07
+    },
+    "max_abs_diff_batch1": 3.8743019104003906e-07,
+    "cpu_ms_per_image": 28.8,
+    "tolerance": 0.001,
+    "pass": true
+  },
+  "task3_softmoe": {
+    "file": "task3_softmoe.onnx",
+    "size_mb": 31.41,
+    "max_abs_diff": {
+      "restored": 5.960464477539062e-07,
+      "weights": 7.152557373046875e-07
+    },
+    "max_abs_diff_batch1": 1.1920928955078125e-07,
+    "cpu_ms_per_image": 74.8,
+    "tolerance": 0.001,
+    "pass": true,
+    "weights_sum_to_1": true
+  },
+  "task4_generator": {
+    "file": "task4_generator.onnx",
+    "size_mb": 66.22,
+    "max_abs_diff": {
+      "sketch": 1.3113021850585938e-06
+    },
+    "max_abs_diff_batch1": 6.034970283508301e-07,
+    "cpu_ms_per_image": 30.6,
+    "tolerance": 0.001,
+    "pass": true
+  }
+}
