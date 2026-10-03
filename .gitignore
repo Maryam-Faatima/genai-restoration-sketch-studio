@@ -27,3 +27,4 @@ studies/
 *.env/
 models/
 *.onnx
+frontend/dist/
