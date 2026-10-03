@@ -1,0 +1,72 @@
+{
+  "task1_ae_v3": {
+    "total": 24,
+    "complete": 9,
+    "pruned": 15,
+    "best_value": 0.6027942359447479,
+    "best_params": {
+      "lr": 0.0004549902457423108,
+      "batch_size": 32,
+      "latent_ch": 64,
+      "base": 32,
+      "dropout": 0.1,
+      "alpha": 0.6,
+      "skip_ch": 4
+    }
+  },
+  "task2_cls": {
+    "total": 30,
+    "complete": 6,
+    "pruned": 24,
+    "best_value": 0.9986412943148505,
+    "best_params": {
+      "lr": 0.0007106591851092234,
+      "batch_size": 16,
+      "channels": "small",
+      "dropout": 0.5,
+      "weight_decay": 0.00025378155082656634
+    }
+  },
+  "task2_spec_v3": {
+    "total": 12,
+    "complete": 6,
+    "pruned": 6,
+    "best_value": 0.5999490022659302,
+    "best_params": {
+      "lr": 0.0009024740059313989,
+      "batch_size": 16,
+      "base": 32,
+      "latent_ch": 48,
+      "skip_ch": 8,
+      "alpha": 0.6
+    }
+  },
+  "task3_moe": {
+    "total": 10,
+    "complete": 10,
+    "pruned": 0,
+    "best_value": 0.8113611459732055,
+    "best_params": {
+      "lr_joint": 0.00011265466963346021,
+      "T": 1.2615344229334267,
+      "lam_cls": 0.015679933916723017,
+      "lam_bal": 0.07026263205443048,
+      "alpha": 0.7
+    }
+  },
+  "task4_gan": {
+    "total": 12,
+    "complete": 4,
+    "pruned": 8,
+    "best_value": 0.5005934834480286,
+    "best_params": {
+      "lr_g": 0.0005958443469672521,
+      "lr_d": 0.000434979656425666,
+      "batch_size": 32,
+      "base": 48,
+      "dropout": 0.1,
+      "emb_dim": 32,
+      "lambda_l1": 200
+    }
+  }
+}
