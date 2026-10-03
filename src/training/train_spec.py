@@ -4,11 +4,11 @@ from torch.utils.data import DataLoader
 from src.config import CKPT_ROOT, MANIFEST_DIR
 from src.data.pets import load_pets, PetRestorationDataset
 from src.data.balanced import MixedTypesDataset
-from src.models.autoencoder import ConvAE
+from src.models.autoencoder import build_ae
 from src.training.common import (set_seed, get_device, recon_loss, evaluate, summarize,
                                  score, sample_grid)
 
-DEFAULT_CFG = dict(lr=5e-4, batch_size=32, base=32, bottleneck=256, dropout=0.1, alpha=0.7)
+DEFAULT_CFG = dict(lr=5e-4, batch_size=32, base=32, latent_ch=16, dropout=0.1, alpha=0.7)
 TYPE_IDS = {"salt": 1, "blur": 2, "occ": 3}
 
 
@@ -26,7 +26,7 @@ def make_loaders(types, batch_size, workers):
 def train_spec(cfg, types, epochs, run_name, save_name=None, trial=None, use_wandb=True,
                group=None, num_workers=2, seed=42):
     set_seed(seed); dev = get_device()
-    model = ConvAE(cfg["base"], cfg["bottleneck"], cfg.get("dropout", 0.1)).to(dev)
+    model = build_ae(cfg).to(dev)
     n_params = sum(p.numel() for p in model.parameters())
     opt = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=1e-5)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)

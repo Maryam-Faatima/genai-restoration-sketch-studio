@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from pytorch_msssim import ssim
 from src.config import CKPT_ROOT
 from src.data.corruptions import CLASS_NAMES
-from src.models.autoencoder import ConvAE
+from src.models.autoencoder import build_ae
 from src.models.classifier import CorruptionClassifier
 from src.training.common import get_device, make_manifest_loader, psnr, summarize
 from src.training.train_cls import cls_metrics
@@ -22,7 +22,7 @@ clf.load_state_dict(ck["state_dict"]); clf.eval()
 specs = {}
 for k, nm in [(1, "salt"), (2, "blur"), (3, "occ")]:
     s = torch.load(t2 / f"spec_{nm}.pt", map_location=dev); c = s["cfg"]
-    m = ConvAE(c["base"], c["bottleneck"], c.get("dropout", 0.1)).to(dev)
+    m = build_ae(c).to(dev)
     m.load_state_dict(s["state_dict"]); m.eval(); specs[k] = m
 
 

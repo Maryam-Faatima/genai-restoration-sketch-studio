@@ -5,13 +5,13 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from src.config import CKPT_ROOT
-from src.models.autoencoder import ConvAE
+from src.models.autoencoder import build_ae
 from src.training.common import get_device, make_manifest_loader, evaluate, summarize
 
 dev = get_device()
 ck = torch.load(CKPT_ROOT / "task1" / "best.pt", map_location=dev)
 c = ck["cfg"]
-model = ConvAE(c["base"], c["bottleneck"], c["dropout"]).to(dev)
+model = build_ae(c).to(dev)
 model.load_state_dict(ck["state_dict"]); model.eval()
 print("config:", c)
 

@@ -2,18 +2,18 @@ import argparse, json
 import torch
 from pytorch_msssim import ssim  # noqa: F401 (used inside recon_loss)
 from src.config import CKPT_ROOT
-from src.models.autoencoder import ConvAE
+from src.models.autoencoder import build_ae
 from src.training.common import (set_seed, get_device, recon_loss, make_train_loader,
                                  make_manifest_loader, evaluate, summarize, score, sample_grid)
 
-DEFAULT_CFG = dict(lr=1e-3, batch_size=32, base=32, bottleneck=256, dropout=0.1, alpha=0.8)
+DEFAULT_CFG = dict(lr=1e-3, batch_size=32, base=32, latent_ch=16, dropout=0.1, alpha=0.8)
 
 
 def train(cfg, epochs, run_name, trial=None, use_wandb=True, save=False,
           group=None, num_workers=2):
     set_seed(42)
     dev = get_device()
-    model = ConvAE(cfg["base"], cfg["bottleneck"], cfg["dropout"]).to(dev)
+    model = build_ae(cfg).to(dev)
     n_params = sum(p.numel() for p in model.parameters())
     opt = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=1e-5)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
