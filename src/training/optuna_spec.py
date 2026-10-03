@@ -7,10 +7,11 @@ from src.training.train_spec import train_spec
 
 def make_objective(epochs, use_wandb, workers):
     def objective(trial):
-        cfg = {"lr": trial.suggest_float("lr", 1e-4, 2e-3, log=True),
+        cfg = {"lr": trial.suggest_float("lr", 5e-5, 2e-3, log=True),
                "batch_size": trial.suggest_categorical("batch_size", [16, 32, 64]),
-               "base": trial.suggest_categorical("base", [16, 32, 48, 64]),
-               "latent_ch": trial.suggest_categorical("latent_ch", [4, 8, 16, 32]),
+               "base": trial.suggest_categorical("base", [32, 48, 64]),
+               "latent_ch": trial.suggest_categorical("latent_ch", [16, 32, 48, 64]),
+               "skip_ch": trial.suggest_categorical("skip_ch", [0, 2, 4, 8]),
                "alpha": round(trial.suggest_float("alpha", 0.5, 0.95, step=0.05), 2),
                "dropout": 0.1}
         # shared search: one autoencoder trained on the union of the three corruptions (proxy)
@@ -27,8 +28,8 @@ if __name__ == "__main__":
     ap.add_argument("--workers", type=int, default=2)
     a = ap.parse_args()
 
-    url, sync = study_storage("task2_spec_v2")
-    study = optuna.create_study(study_name="task2_spec_v2", direction="maximize", storage=url,
+    url, sync = study_storage("task2_spec_v3")
+    study = optuna.create_study(study_name="task2_spec_v3", direction="maximize", storage=url,
                                 load_if_exists=True, sampler=optuna.samplers.TPESampler(seed=42),
                                 pruner=optuna.pruners.MedianPruner(n_startup_trials=4, n_warmup_steps=2))
     study.optimize(make_objective(a.epochs, not a.no_wandb, a.workers),
@@ -40,8 +41,8 @@ if __name__ == "__main__":
 
     os.makedirs("configs", exist_ok=True)
     best = dict(study.best_params); best["alpha"] = round(best["alpha"], 2); best["dropout"] = 0.1
-    json.dump(best, open("configs/task2_spec_v2_best.json", "w"), indent=2)
-    study.trials_dataframe().to_csv("configs/task2_spec_v2_optuna_trials.csv", index=False)
+    json.dump(best, open("configs/task2_spec_v3_best.json", "w"), indent=2)
+    study.trials_dataframe().to_csv("configs/task2_spec_v3_optuna_trials.csv", index=False)
     out = CKPT_ROOT / "task2"; out.mkdir(parents=True, exist_ok=True)
-    json.dump(best, open(out / "task2_spec_v2_best.json", "w"), indent=2)
-    study.trials_dataframe().to_csv(out / "task2_spec_v2_optuna_trials.csv", index=False)
+    json.dump(best, open(out / "task2_spec_v3_best.json", "w"), indent=2)
+    study.trials_dataframe().to_csv(out / "task2_spec_v3_optuna_trials.csv", index=False)
