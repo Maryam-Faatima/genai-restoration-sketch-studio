@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      MODEL_DIR: /models
+      SAMPLES_DIR: /samples
+    volumes:
+      - ./models:/models:ro
+      - ./samples:/samples:ro
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
