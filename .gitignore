@@ -26,4 +26,4 @@ studies/
 
 *.env/
 models/
-*.onnx/
+*.onnx

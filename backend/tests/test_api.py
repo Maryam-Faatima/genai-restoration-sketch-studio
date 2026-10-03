@@ -131,4 +131,4 @@ def test_validation(client):
     assert client.post("/api/universal", files=up(), data={"corruption": "blur", "severity": "x"}).status_code == 422
     gif = io.BytesIO(); Image.new("RGB", (8, 8)).save(gif, "GIF")
     assert client.post("/api/universal", files=up(gif.getvalue(), "a.gif", "image/gif")).status_code == 415
-    assert client.post("/api/universal", files=up(b"x" * (10 * 1024 * 1024 + 5))).status_code
+    assert client.post("/api/universal", files=up(b"x" * (10 * 1024 * 1024 + 5))).status_code == 413
