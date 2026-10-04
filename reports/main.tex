@@ -26,11 +26,11 @@
 
 \title{Universal, Hard-Routed and Soft Mixture-of-Experts Image Restoration and Style-Conditioned Face-to-Sketch Generation: From Research to a Containerised Application}
 
-\author{\IEEEauthorblockN{\todo{Maryam Fatima}}
-\IEEEauthorblockA{\todo{23i-0788}, \todo{Computer Science}, FAST-NUCES\\
-Email: \todo{email}\\
+\author{\IEEEauthorblockN{Maryam Fatima}
+\IEEEauthorblockA{23i-0788, Computer Science, FAST-NUCES\\
+Email: maryam.faatim4@gmail.com\\
 Code: \url{https://github.com/Maryam-Faatima/genai-restoration-sketch-studio}\\
-Demo video: \todo{YouTube link}}}
+Demo video: \url{https://youtu.be/hl0AEWOZavM?si=2v_Tvvj9xiunxTBJ}}}
 
 \maketitle
 
@@ -176,7 +176,7 @@ Validation score $J$ & 0.575 & 0.569 & 0.606 & 0.610\\
 \begin{figure}[t]
 \centering
 \safegraphic[width=\linewidth]{curves/task1_val_score.png}
-\caption{Task 1 final training: validation score versus epoch for the skip and no-skip runs. \todo{export from W\&B and save as report\_figures/curves/task1\_val\_score.png}}\label{fig:t1curve}
+\caption{Task 1 final training: validation score versus epoch for the skip and no-skip runs.}\label{fig:t1curve}
 \end{figure}
 
 \subsection{Results}
@@ -645,7 +645,7 @@ Style 3 & 46 & 0.071 & 18.01 & 0.597\\
 \end{figure*}
 
 \subsection{Limitations and an ablation on the reconstruction weight}
-The generated sketches are soft and blurry: they capture the head shape, hair mass, eyes and mouth but not the line character (individual strokes, hatching) of the real sketches, and a faint grid texture is visible in dark areas, consistent with transposed-convolution upsampling. The elderly subject in the third style comparison is rendered much more faintly than the others, and Style 2 turns his features into a messy blur. We tested whether the large reconstruction weight, which encourages averaging, was the cause by retraining the best configuration with $\lambda_{L1}=50$ (Table~\ref{tab:t4abl}). Test metrics were unchanged within run-to-run noise (SSIM 0.486 versus 0.484), and the sketches looked equally soft, so the hypothesis is \emph{not supported}. We kept $\lambda_{L1}=200$, which was selected by the search. The training logs suggest other causes: the discriminator real and fake losses stay near 0.67 ($\ln 2\approx0.693$), so the adversarial signal is weak; the training $L_1$ (about 0.05 on a $[0,1]$ scale) is roughly half the validation $L_1$ (about 0.095), indicating memorisation of the 899 training pairs; and the hand-drawn sketches are only loosely aligned with the photographs, which penalises sharp lines under pixel-wise losses. These are hypotheses supported by the logs; we did not isolate them with further experiments. \todo{Look at report\_figures/task4/failure\_cases.png and add one sentence describing the lowest-SSIM test images (the $\lambda_{L1}=50$ run's four lowest were three Style 2 and one Style 1).}
+The generated sketches are soft and blurry: they capture the head shape, hair mass, eyes and mouth but not the line character (individual strokes, hatching) of the real sketches, and a faint grid texture is visible in dark areas, consistent with transposed-convolution upsampling. The elderly subject in the third style comparison is rendered much more faintly than the others, and Style 2 turns his features into a messy blur. We tested whether the large reconstruction weight, which encourages averaging, was the cause by retraining the best configuration with $\lambda_{L1}=50$ (Table~\ref{tab:t4abl}). Test metrics were unchanged within run-to-run noise (SSIM 0.486 versus 0.484), and the sketches looked equally soft, so the hypothesis is \emph{not supported}. We kept $\lambda_{L1}=200$, which was selected by the search. The training logs suggest other causes. The discriminator losses settle near 0.5 (real 0.52, fake 0.51 at epoch 100), so the adversarial signal is modest. Training L1 falls from 0.298 to 0.113 while validation L1 stays near 0.100 from epoch 10 on, and validation SSIM peaks around epoch 20 (0.508) before drifting down to 0.469, so the model stops improving on unseen faces early; we therefore keep the best-validation checkpoint. (Training L1 is measured with dropout active, so it is not directly comparable to validation L1.) The hand-drawn sketches are also only loosely aligned with the photographs, which penalises sharp lines under pixel-wise losses. These are hypotheses supported by the logs; we did not isolate them with further experiments. The four lowest-SSIM test pairs (indices 221, 65 and 42 in Style 2 and 517 in Style 1; SSIM 0.17--0.21) all have real sketches with dense individual strokes (hair strands, shading on the cheeks and neck), whereas the generated sketch is a soft blur that keeps the dark hair mass, eyes and mouth but no strokes; in the Style 1 case the output is very faint, almost a blank face.
 
 \begin{table}[t]
 \centering
@@ -740,7 +740,7 @@ The four workspaces (Fig.~\ref{fig:app}) accept an uploaded image, a bundled sam
 \end{figure}
 
 \subsection{Experiment tracking and the Optuna record}
-Training and tuning runs were logged to Weights \& Biases (\todo{W\&B project URL}): hyperparameters, per-epoch losses and metrics (including per-condition validation PSNR and SSIM, classifier per-class F1, routing weights and the separate GAN losses), checkpoints as artifacts and sample grids on fixed validation images. Table~\ref{tab:ledger} lists every Optuna study with its true completed and pruned counts; the Optuna databases and trial tables are in the repository (\texttt{configs/}). The four controlled ablation runs of Task 1 were run without W\&B logging, so their results are reported from the training output only.
+Training and tuning runs were logged to Weights \& Biases (\url{https://forge.coreweave.com/wandb/i230788-fast-nuces/genai-a1-restoration}): hyperparameters, per-epoch losses and metrics (including per-condition validation PSNR and SSIM, classifier per-class F1, routing weights and the separate GAN losses), checkpoints as artifacts and sample grids on fixed validation images. Table~\ref{tab:ledger} lists every Optuna study with its true completed and pruned counts; the Optuna databases and trial tables are in the repository (\texttt{configs/}). The four controlled ablation runs of Task 1 were run without W\&B logging, so their results are reported from the training output only.
 
 \begin{table}[t]
 \centering
