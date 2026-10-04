@@ -13,11 +13,11 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,calc}
 
-% If main.tex is in the repo root, change to \newcommand{\figdir}{report_figures/}
-\newcommand{\figdir}{../report_figures/}
 \newcommand{\safegraphic}[2][width=\linewidth]{%
-  \IfFileExists{\figdir#2}{\includegraphics[#1]{\figdir#2}}{%
-  \fbox{\parbox{0.85\linewidth}{\centering\footnotesize Missing figure:\\ \detokenize{#2}}}}}
+  \IfFileExists{../report_figures/#2}{\includegraphics[#1]{../report_figures/#2}}{%
+  \IfFileExists{report_figures/#2}{\includegraphics[#1]{report_figures/#2}}{%
+  \IfFileExists{#2}{\includegraphics[#1]{#2}}{%
+  \fbox{\parbox{0.85\linewidth}{\centering\footnotesize Missing figure:\\ \detokenize{#2}}}}}}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 \newcommand{\ssim}{\mathrm{SSIM}}
 \newcommand{\lone}{\mathcal{L}_1}
