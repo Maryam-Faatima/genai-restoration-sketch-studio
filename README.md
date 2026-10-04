@@ -42,15 +42,19 @@ Restoration & Sketch Studio provides four unified interactive workspaces:
 
 ### 1. Clone the repository
 ```bash
-git clone <repository_url>
+git clone https://github.com/Maryam-Faatima/genai-restoration-sketch-studio.git
 cd genai-restoration-sketch-studio
 ```
 
 ### 2. Download the trained models
-Download the 7 required ONNX models into `./models`:
+Download the 7 required ONNX models into `./models` (fetches automatically from the [GitHub Release v1.0](https://github.com/Maryam-Faatima/genai-restoration-sketch-studio/releases/tag/v1.0) with Google Drive fallback):
 ```bash
 python scripts/download_models.py
 ```
+Models can also be downloaded manually from:
+- **GitHub Release v1.0**: [Download Release Assets](https://github.com/Maryam-Faatima/genai-restoration-sketch-studio/releases/tag/v1.0)
+- **Google Drive Folder**: [Shared Drive Folder](https://drive.google.com/drive/folders/13eGF6sR4aGR4N7InPVb21RzuSDKLAre3)
+
 *(Verifies presence of `task1_universal.onnx`, `task2_classifier.onnx`, `task2_spec_salt.onnx`, `task2_spec_blur.onnx`, `task2_spec_occ.onnx`, `task3_softmoe.onnx`, and `task4_generator.onnx`)*.
 
 ### 3. Build and launch with Docker Compose
@@ -111,5 +115,5 @@ Open `http://localhost:5173`. Vite proxies all `/api/*` requests directly to `ht
 
 ---
 
-YouTube demo: <link>
-Report: <link>
+- **YouTube Demo**: [Watch the walkthrough](https://youtu.be/hl0AEWOZavM?si=2v_Tvvj9xiunxTBJ)
+- **Project Report**: [`reports/report.pdf`](reports/report.pdf)
