@@ -772,7 +772,7 @@ Task 4 cGAN (val.\ SSIM) & 12 & 4 & 8 & 0.5006\\
 \item \textbf{Proxy search and missing controls.} The specialist architecture was found with one autoencoder trained on all three corruptions, not per corruption, and there is no no-skip control at convergence for the specialists.
 \item \textbf{Test-set use.} Earlier model versions (v1, v2) were also evaluated on the test set before v3 was designed; all selection used validation data only.
 \item \textbf{Metrics.} PSNR is capped at 50\,dB, which inflates the overall averages whenever clean inputs are left unchanged; per-condition rows are the fair comparison.
-\item \textbf{Face-to-sketch quality.} The sketches are blurry, with weak adversarial signal, memorisation of 899 training pairs and loosely aligned targets; the official test split is imbalanced (619/381/46), so Style 3 is barely evaluated.
+\item \textbf{Face-to-sketch quality.} The sketches are blurry; validation SSIM peaks early and declines, and the hand-drawn targets are only loosely aligned with the photographs; the official test split is imbalanced (619/381/46), so Style 3 is barely evaluated.
 \item \textbf{Application.} Inference runs on CPU; the soft MoE takes about 75\,ms per image in the benchmark (single images in the container can be slower on a first request). The webcam requires a secure context (localhost or HTTPS), and the model files must be downloaded separately from the repository.
 \end{itemize}
 
@@ -783,7 +783,6 @@ We compared three restoration designs and a style-conditioned cGAN under identic
 %=====================================================================
 \appendices
 \section{AI-Assisted Development Statement}
-% VERIFY: edit this appendix so it describes exactly what you did and checked.
 \textbf{Tools used.} Anthropic's Claude was used for project planning, drafting data-pipeline, training, Optuna, evaluation, ONNX-export and backend code, analysing result tables, and drafting this report's LaTeX. Google Stitch was used for the interface design. An AI coding agent (Google Antigravity) generated the React/Tailwind frontend from a written specification that listed the exact backend contract and design screens. Weights \& Biases, Optuna, PyTorch and ONNX Runtime were used as libraries.
 
 \textbf{How outputs were tested and corrected.}
