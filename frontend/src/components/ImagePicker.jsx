@@ -1,8 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { UploadCloud, Image as ImageIcon, Check } from 'lucide-react';
-
-const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+import React, { useRef } from 'react';
+import { Upload, Image as ImageIcon, X } from 'lucide-react';
 
 export default function ImagePicker({
   selectedFile,
@@ -12,183 +9,167 @@ export default function ImagePicker({
   samples = [],
   sampleType = 'pet', // 'pet' or 'face'
   disabled = false,
-  customTitle = "Select or Upload Image"
+  customTitle = null,
 }) {
   const fileInputRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [selectedSampleName, setSelectedSampleName] = useState(null);
 
-  const filterPrefix = sampleType === 'face' ? 'face_' : 'pet_';
-  const filteredSamples = samples.filter(s => s.name.startsWith(filterPrefix));
+  const filteredSamples = samples.filter((s) => {
+    if (sampleType === 'pet') return s.name.startsWith('pet_');
+    if (sampleType === 'face') return s.name.startsWith('face_');
+    return true;
+  });
 
-  const validateAndSetFile = (file, sampleName = null) => {
+  const validateAndSelectFile = (file) => {
     if (!file) return;
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      onError('Unsupported image type. Use PNG, JPEG or WEBP.');
+    const validTypes = ['image/png', 'image/jpeg', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      if (onError) onError('Invalid file type. Only PNG, JPEG, or WEBP images are allowed.');
       return;
     }
 
-    if (file.size > MAX_BYTES) {
-      onError('File too large (max 10 MB).');
+    const maxSize = 10 * 1024 * 1024; // 10 MB
+    if (file.size > maxSize) {
+      if (onError) onError('File too large. Maximum allowed size is 10 MB.');
       return;
     }
 
-    onError(null);
-    setSelectedSampleName(sampleName);
+    if (onError) onError(null);
     onImageSelected(file);
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    if (!disabled) setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    setIsDragging(false);
     if (disabled) return;
-
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      validateAndSetFile(e.dataTransfer.files[0]);
+      validateAndSelectFile(e.dataTransfer.files[0]);
     }
   };
 
-  const handleFileInput = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      validateAndSetFile(e.target.files[0]);
-    }
+  const handleDragOver = (e) => {
+    e.preventDefault();
   };
 
-  const handleSelectSample = async (sample) => {
+  const handleSampleClick = async (sample) => {
     if (disabled) return;
     try {
-      onError(null);
-      const res = await fetch(sample.url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
+      const response = await fetch(sample.url);
+      if (!response.ok) throw new Error('Failed to load sample image');
+      const blob = await response.blob();
       const file = new File([blob], sample.name, { type: blob.type || 'image/png' });
-      validateAndSetFile(file, sample.name);
+      validateAndSelectFile(file);
     } catch (err) {
-      onError(`Failed to load sample image: ${err.message}`);
+      if (onError) onError(`Could not load sample: ${err.message}`);
     }
+  };
+
+  const handleClear = () => {
+    if (disabled) return;
+    onImageSelected(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-studio-border p-5 shadow-card space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-semibold text-studio-purple-950 text-base flex items-center gap-2">
-          <ImageIcon className="w-4 h-4 text-purple-600" />
-          <span>{customTitle}</span>
-        </h3>
-        <span className="text-xs text-purple-600/70 font-medium">
-          PNG, JPEG or WEBP, max 10 MB
+    <div className="rounded-3xl border border-[#2D2424]/10 bg-white p-6 space-y-5 shadow-scafos">
+      {/* Title */}
+      <div className="flex items-center justify-between border-b border-[#2D2424]/10 pb-3">
+        <div className="flex items-center gap-2">
+          <ImageIcon className="w-4 h-4 text-[#C24B38]" />
+          <h3 className="font-serif font-bold text-sm tracking-wide uppercase text-[#2D2424]">
+            {customTitle || 'Select Input Image'}
+          </h3>
+        </div>
+        <span className="text-[10px] font-mono uppercase tracking-wider text-[#7C6F6F] border border-[#2D2424]/15 px-2.5 py-0.5 rounded-full bg-[#F8E7E3]">
+          PNG, JPEG or WEBP · Max 10 MB
         </span>
       </div>
 
-      {/* Dropzone */}
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => !disabled && fileInputRef.current?.click()}
-        className={`relative rounded-xl border-2 border-dashed p-6 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center min-h-[140px] ${
-          disabled
-            ? 'opacity-50 cursor-not-allowed border-purple-200 bg-purple-50/30'
-            : isDragging
-            ? 'border-purple-500 bg-purple-100/50 scale-[0.99]'
-            : 'border-purple-200/80 hover:border-purple-400 bg-purple-50/20 hover:bg-purple-50/50'
-        }`}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          className="hidden"
-          onChange={handleFileInput}
-          disabled={disabled}
-        />
-
-        {previewUrl ? (
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
-            <div className="relative group">
-              <img
-                src={previewUrl}
-                alt="Selected preview"
-                className="w-20 h-20 sm:w-24 sm:h-24 object-contain rounded-lg border border-purple-200 bg-white shadow-sm"
-              />
-              <div className="absolute inset-0 bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-medium">
-                Change
-              </div>
-            </div>
-            <div className="text-left text-xs space-y-1">
-              <p className="font-medium text-studio-purple-950 truncate max-w-[200px]">
-                {selectedFile?.name || 'Selected Image'}
-              </p>
-              <p className="text-purple-600/70">
-                {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : ''}
-              </p>
-              <span className="inline-block text-purple-700 bg-purple-100 px-2 py-0.5 rounded text-[11px] font-medium">
-                Click or drag another to replace
-              </span>
-            </div>
+      {/* Drag & Drop Area / Active Preview */}
+      {previewUrl ? (
+        <div className="relative rounded-2xl border-2 border-[#C24B38]/30 bg-[#FFF7F4] p-3 flex flex-col items-center">
+          <div className="relative w-44 h-44 bg-white rounded-xl flex items-center justify-center border border-[#2D2424]/10 overflow-hidden shadow-xs">
+            <img
+              src={previewUrl}
+              alt="Selected preview"
+              className="w-full h-full object-contain"
+              style={{ imageRendering: 'auto' }}
+            />
           </div>
-        ) : (
-          <>
-            <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-2 shadow-sm">
-              <UploadCloud className="w-6 h-6" />
-            </div>
-            <p className="text-sm font-medium text-studio-purple-950">
-              Drag & drop or tap to browse
-            </p>
-            <p className="text-xs text-purple-500/80 mt-1">
-              Allowed: PNG, JPEG or WEBP (Max 10 MB)
-            </p>
-          </>
-        )}
-      </div>
-
-      {/* Samples section */}
-      {filteredSamples.length > 0 && (
-        <div className="pt-2 border-t border-purple-100/60">
-          <p className="text-xs font-semibold text-studio-purple-900 uppercase tracking-wider mb-2.5">
-            Or pick a {sampleType === 'face' ? 'face portrait' : 'clean pet'} sample:
+          <div className="mt-3 flex items-center justify-between w-full px-2">
+            <span className="text-[11px] font-mono text-[#7C6F6F] truncate max-w-[180px]">
+              {selectedFile?.name || 'Selected Image'}
+            </span>
+            <button
+              type="button"
+              onClick={handleClear}
+              disabled={disabled}
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-[#C24B38] hover:text-[#A63827] uppercase tracking-wider transition-colors disabled:opacity-50"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Change Photo</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onClick={() => !disabled && fileInputRef.current?.click()}
+          className={`rounded-2xl border-2 border-dashed border-[#C24B38]/30 hover:border-[#C24B38] bg-[#FFF7F4] hover:bg-white transition-all duration-300 p-8 text-center cursor-pointer ${
+            disabled ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png, image/jpeg, image/webp"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                validateAndSelectFile(e.target.files[0]);
+              }
+            }}
+            disabled={disabled}
+          />
+          <div className="w-12 h-12 rounded-full bg-[#F8E7E3] text-[#C24B38] flex items-center justify-center mx-auto mb-3 shadow-xs">
+            <Upload className="w-5 h-5 text-[#C24B38]" />
+          </div>
+          <p className="text-xs uppercase tracking-widest font-bold text-[#2D2424]">
+            Drag & drop or tap to browse
           </p>
-          <div className="grid grid-cols-4 sm:grid-cols-4 gap-2.5">
-            {filteredSamples.map((sample, idx) => {
-              const isSelected = selectedSampleName === sample.name;
-              return (
-                <button
-                  key={sample.name}
-                  type="button"
-                  onClick={() => handleSelectSample(sample)}
-                  disabled={disabled}
-                  className={`group relative flex flex-col items-center p-1.5 rounded-xl border text-center transition-all ${
-                    isSelected
-                      ? 'border-purple-500 bg-purple-100/60 ring-2 ring-purple-400 ring-offset-1'
-                      : 'border-purple-200/70 bg-white hover:border-purple-300 hover:bg-purple-50/40'
-                  }`}
-                >
-                  <img
-                    src={sample.url}
-                    alt={sample.name}
-                    className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg bg-purple-50"
-                  />
-                  <span className="text-[11px] font-medium text-studio-purple-900 mt-1 truncate max-w-full">
-                    {sampleType === 'face' ? `Portrait ${idx + 1}` : `Pet ${idx + 1}`}
-                  </span>
-                  {isSelected && (
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-purple-600 text-white rounded-full flex items-center justify-center shadow">
-                      <Check className="w-2.5 h-2.5 stroke-[3]" />
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+          <p className="text-[10px] text-[#7C6F6F] mt-1 font-mono">
+            PNG, JPEG or WEBP (Max 10 MB)
+          </p>
+        </div>
+      )}
+
+      {/* Samples Thumbnails Gallery */}
+      {filteredSamples.length > 0 && (
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between text-[10px] uppercase tracking-widest font-bold text-[#7C6F6F]">
+            <span>Or Pick a Studio Sample</span>
+            <span className="font-handwriting text-2xl text-[#C24B38]">{filteredSamples.length} cute swatches</span>
+          </div>
+          <div className="grid grid-cols-4 gap-2.5 max-h-36 overflow-y-auto pr-1">
+            {filteredSamples.map((sample) => (
+              <button
+                key={sample.name}
+                type="button"
+                onClick={() => handleSampleClick(sample)}
+                disabled={disabled}
+                className="group relative rounded-xl border border-[#2D2424]/15 hover:border-[#C24B38] bg-white p-1 transition-all duration-200 flex flex-col items-center disabled:opacity-50 hover:shadow-xs"
+              >
+                <img
+                  src={sample.url}
+                  alt={sample.name}
+                  className="w-full aspect-square object-cover rounded-lg"
+                  loading="lazy"
+                />
+                <span className="text-[9px] font-mono text-[#7C6F6F] truncate w-full text-center mt-1 group-hover:text-[#C24B38] font-semibold">
+                  {sample.name.replace(/^(pet_|face_)/, '').replace(/\.png$/, '')}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       )}

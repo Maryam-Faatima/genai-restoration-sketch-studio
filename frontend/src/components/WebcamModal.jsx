@@ -107,45 +107,62 @@ export default function WebcamModal({ isOpen, onClose, onCapture, onError }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-purple-950/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-purple-200 space-y-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      style={{ background: 'rgba(30,0,60,0.6)', backdropFilter: 'blur(8px)' }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Webcam capture modal"
+    >
+      <div
+        className="rounded-3xl max-w-md w-full p-6 border space-y-4 shadow-2xl"
+        style={{
+          background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(250,245,255,0.92) 100%)',
+          borderColor: 'rgba(216,180,254,0.6)',
+          boxShadow: '0 25px 60px rgba(147,51,234,0.2)'
+        }}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Camera className="w-5 h-5 text-purple-600" />
-            <h3 className="font-bold text-studio-purple-950 text-base">Webcam Photo Capture</h3>
+            <h3 className="font-extrabold text-studio-purple-950 text-base font-serif">Webcam Photo Capture</h3>
           </div>
           <button
             onClick={() => {
               stopCamera();
               onClose();
             }}
-            className="p-1 rounded-full text-purple-400 hover:text-purple-700 hover:bg-purple-100 transition-colors"
+            className="p-1.5 rounded-lg text-purple-400 hover:text-purple-700 hover:bg-purple-100/60 transition-colors"
+            aria-label="Close webcam"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {cameraError ? (
-          <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-2">
-            <div className="flex items-center gap-2 font-semibold">
-              <AlertCircle className="w-4 h-4 text-rose-600" />
+          <div
+            className="p-4 border border-rose-200/80 rounded-2xl text-xs text-rose-900 space-y-2"
+            style={{ background: 'rgba(255,241,242,0.9)' }}
+          >
+            <div className="flex items-center gap-2 font-bold text-rose-700">
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <span>Camera Unavailable</span>
             </div>
-            <p>{cameraError}</p>
-            <p className="text-rose-600 font-medium">Note: Camera capture only works on localhost or HTTPS.</p>
+            <p className="leading-relaxed">{cameraError}</p>
+            <p className="text-rose-600 font-semibold text-[11px]">Note: Camera capture only works on localhost or HTTPS.</p>
             <button
               onClick={startCamera}
-              className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-semibold hover:bg-rose-700"
+              className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700 transition-colors shadow-sm"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Retry
             </button>
           </div>
         ) : (
-          <div className="relative aspect-square w-full bg-black rounded-xl overflow-hidden flex items-center justify-center border border-purple-200">
+          <div className="relative aspect-square w-full bg-black/90 rounded-2xl overflow-hidden flex items-center justify-center border border-purple-200/60 shadow-inner">
             {isLoading && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-purple-900/40 text-white gap-2">
-                <RefreshCw className="w-6 h-6 animate-spin" />
-                <span className="text-xs">Initializing camera...</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-purple-950/60 text-white gap-2 backdrop-blur-xs">
+                <RefreshCw className="w-6 h-6 animate-spin text-purple-300" />
+                <span className="text-xs font-semibold">Initializing camera...</span>
               </div>
             )}
             <video
@@ -158,14 +175,15 @@ export default function WebcamModal({ isOpen, onClose, onCapture, onError }) {
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end gap-2.5 pt-2">
           <button
             type="button"
             onClick={() => {
               stopCamera();
               onClose();
             }}
-            className="px-4 py-2 rounded-xl border border-purple-200 text-purple-700 text-sm font-medium hover:bg-purple-50 transition-colors"
+            className="px-4 py-2.5 rounded-xl border border-purple-200/80 text-purple-700 text-xs font-bold hover:bg-white/80 transition-colors"
+            style={{ background: 'rgba(255,255,255,0.7)' }}
           >
             Cancel
           </button>
@@ -174,8 +192,10 @@ export default function WebcamModal({ isOpen, onClose, onCapture, onError }) {
               type="button"
               onClick={handleCapture}
               disabled={isLoading || !stream}
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-semibold shadow hover:opacity-95 transition-opacity disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl text-white text-xs font-extrabold shadow-md hover:opacity-95 transition-opacity disabled:opacity-50 flex items-center gap-1.5"
+              style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #db2777 100%)' }}
             >
+              <Camera className="w-4 h-4" />
               Capture Frame
             </button>
           )}

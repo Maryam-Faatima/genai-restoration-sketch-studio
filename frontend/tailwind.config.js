@@ -7,39 +7,53 @@ export default {
   theme: {
     extend: {
       colors: {
+        scafos: {
+          bg: '#F8E7E3',          // signature Scafos warm blush peach
+          surface: '#FFF7F4',     // clean crisp warm white card
+          terracotta: '#C24B38',  // signature Scafos rust button color
+          terracottaDark: '#A63827',
+          sage: '#B5D3CA',        // Scafos minty sage green accent
+          ochre: '#E8A735',       // warm golden ochre
+          charcoal: '#2D2424',    // friendly dark charcoal text
+          muted: '#7C6F6F',       // soft brown/gray secondary text
+          border: 'rgba(45, 36, 36, 0.12)',
+        },
         studio: {
-          bg: '#FAF7FB',
-          card: '#FFFFFF',
-          border: '#F1E9F6',
+          bg: '#F8E7E3',
+          card: '#FFF7F4',
+          border: '#ECD0C9',
           purple: {
-            50: '#FAF5FF',
-            100: '#F3E8FF',
-            200: '#E9D5FF',
-            300: '#D8B4FE',
-            400: '#C084FC',
-            500: '#A855F7',
-            600: '#9333EA',
-            700: '#7E22CE',
-            800: '#6B21A8',
-            900: '#581C87',
-            950: '#2E1065',
+            50: '#FFF7F4',
+            100: '#F8E7E3',
+            200: '#ECD0C9',
+            300: '#DDB6AC',
+            400: '#BA8D82',
+            500: '#8E675D',
+            600: '#6A4A41',
+            700: '#4D332D',
+            800: '#38221D',
+            900: '#2D1B17',
+            950: '#1F110E',
           },
           pink: {
-            50: '#FDF2F8',
-            100: '#FCE7F3',
-            200: '#FBCFE8',
-            300: '#F472B6',
-            400: '#EC4899',
-            500: '#DB2777',
+            50: '#FFF5F3',
+            100: '#FFE6E1',
+            200: '#FDC7BD',
+            300: '#F49B8B',
+            400: '#E06B57',
+            500: '#C24B38',
           }
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'Montserrat', 'system-ui', 'sans-serif'],
+        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+        handwriting: ['Caveat', '"Italianno"', 'cursive'],
       },
       boxShadow: {
-        'soft': '0 8px 30px -4px rgba(147, 51, 234, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03)',
-        'card': '0 4px 20px -2px rgba(186, 147, 219, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.02)',
+        'scafos': '0 20px 40px -15px rgba(194, 75, 56, 0.12), 0 4px 12px rgba(45, 36, 36, 0.04)',
+        'elevated': '0 25px 50px -12px rgba(45, 36, 36, 0.08)',
+        'card': '0 4px 20px -2px rgba(45, 36, 36, 0.05)',
       }
     },
   },

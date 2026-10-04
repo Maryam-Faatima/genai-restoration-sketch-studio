@@ -1,100 +1,70 @@
 import React from 'react';
-import { Gauge, Activity, Database, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, Signal, TrendingUp } from 'lucide-react';
 
-export default function MetricsCards({
-  inferenceMs,
-  psnr,
-  timingMs,
-  routing,
-  correct,
-  expert
-}) {
+export default function MetricsCards({ inferenceMs, psnr, timingMs }) {
+  const hasTimingMs = timingMs && (timingMs.classifier !== undefined || timingMs.expert !== undefined);
+  const hasPsnr = psnr && (psnr.restored !== undefined || psnr.input !== undefined);
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-      {/* Inference & Timing Card */}
-      <div className="bg-purple-50/50 rounded-xl p-3.5 border border-purple-100 flex flex-col justify-between">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-900 mb-1">
-          <Activity className="w-3.5 h-3.5 text-purple-600" />
-          <span>PERFORMANCE</span>
-        </div>
-        
-        {timingMs ? (
-          <div>
-            <div className="text-base font-bold text-studio-purple-950">
-              Total {inferenceMs} ms
-            </div>
-            <div className="text-xs text-purple-700/90 mt-1 flex items-center gap-2">
-              <span>Classifier: <strong className="text-purple-900">{timingMs.classifier} ms</strong></span>
-              <span>•</span>
-              <span>Expert: <strong className="text-purple-900">{timingMs.expert} ms</strong></span>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div className="text-base font-bold text-studio-purple-950">
-              {inferenceMs} ms <span className="text-xs font-normal text-purple-600">inference</span>
-            </div>
-            <div className="text-xs text-purple-600/70 mt-0.5">
-              ONNX runtime execution latency
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* PSNR Card */}
-      <div className="bg-purple-50/50 rounded-xl p-3.5 border border-purple-100 flex flex-col justify-between">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-900 mb-1">
-          <Gauge className="w-3.5 h-3.5 text-purple-600" />
-          <span>RESTORATION QUALITY (PSNR)</span>
-        </div>
-
-        {psnr ? (
-          <div>
-            <div className="text-base font-bold text-studio-purple-950 flex items-baseline gap-2">
-              <span>{psnr.restored} dB</span>
-              <span className={`text-xs font-medium ${psnr.restored >= psnr.input ? 'text-emerald-700' : 'text-amber-700'}`}>
-                {psnr.restored >= psnr.input ? '+' : ''}
-                {(psnr.restored - psnr.input).toFixed(2)} dB vs input
-              </span>
-            </div>
-            <div className="text-xs text-purple-700/80 mt-1">
-              Input: {psnr.input} dB → Restored: {psnr.restored} dB
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div className="text-xs font-medium text-purple-800">
-              PSNR unavailable
-            </div>
-            <div className="text-[11px] text-purple-600/80 mt-0.5">
-              No clean reference for an uploaded image
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Optional routing accuracy badge if provided */}
-      {correct !== undefined && correct !== null && (
-        <div className="sm:col-span-2 bg-white rounded-xl p-2.5 border border-purple-100 flex items-center justify-between">
+    <div className="space-y-3">
+      {/* Inference time */}
+      {inferenceMs !== undefined && (
+        <div className="rounded-2xl p-4 border border-[#2D2424]/10 bg-[#FFF7F4] flex items-center justify-between gap-2 shadow-xs">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-purple-900 font-medium">Routing Evaluation:</span>
-            {correct ? (
-              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                <CheckCircle className="w-3 h-3 text-emerald-600" />
-                Correct Route
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
-                <XCircle className="w-3 h-3 text-rose-600" />
-                Misrouted
-              </span>
+            <Clock className="w-4 h-4 text-[#C24B38] shrink-0" />
+            <span className="text-xs uppercase tracking-wider font-bold text-[#2D2424]">Inference Speed</span>
+          </div>
+          <div className="text-right space-y-0.5">
+            <span className="text-base font-bold text-[#2D2424] font-mono">{Math.round(inferenceMs)} ms</span>
+            {hasTimingMs && (
+              <div className="text-[10px] text-[#7C6F6F] font-mono">
+                <span>Classifier: {Math.round(timingMs.classifier ?? 0)} ms</span>
+                <span className="mx-1 text-[#2D2424]/20">·</span>
+                <span>Expert: {Math.round(timingMs.expert ?? 0)} ms</span>
+              </div>
             )}
           </div>
-          {expert && (
-            <span className="text-xs text-purple-600 truncate">
-              Assigned: <strong>{expert}</strong>
-            </span>
+        </div>
+      )}
+
+      {/* PSNR */}
+      {hasPsnr ? (
+        <div className="rounded-2xl p-4 border border-[#2D2424]/10 bg-[#FFF7F4] space-y-3 shadow-xs">
+          <div className="flex items-center gap-2">
+            <Signal className="w-4 h-4 text-[#C24B38] shrink-0" />
+            <span className="text-xs uppercase tracking-wider font-bold text-[#2D2424]">PSNR Fidelity Rating</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {psnr.input !== undefined && (
+              <div className="rounded-xl p-3 border border-[#2D2424]/10 bg-white text-center">
+                <div className="text-[10px] uppercase font-bold text-[#7C6F6F] tracking-wide mb-0.5">Input Image</div>
+                <div className="text-lg font-bold text-[#2D2424] font-mono">
+                  {psnr.input?.toFixed(2)} <span className="text-xs text-[#7C6F6F]">dB</span>
+                </div>
+              </div>
+            )}
+            {psnr.restored !== undefined && (
+              <div className="rounded-xl p-3 border border-[#2D2424]/10 bg-white text-center">
+                <div className="text-[10px] uppercase font-bold text-[#7C6F6F] tracking-wide mb-0.5">Restored Output</div>
+                <div className="text-lg font-bold text-[#C24B38] font-mono">
+                  {psnr.restored?.toFixed(2)} <span className="text-xs text-[#7C6F6F]">dB</span>
+                </div>
+              </div>
+            )}
+          </div>
+          {psnr.input !== undefined && psnr.restored !== undefined && (
+            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+              <TrendingUp className="w-4 h-4 text-emerald-600" />
+              <span>+{Math.max(0, (psnr.restored - psnr.input)).toFixed(2)} dB quality improvement</span>
+            </div>
           )}
+        </div>
+      ) : (
+        <div className="rounded-2xl p-3.5 border border-[#2D2424]/10 bg-[#FFF7F4] flex items-center gap-2 shadow-xs">
+          <Signal className="w-4 h-4 text-[#7C6F6F]/60 shrink-0" />
+          <p className="text-xs text-[#7C6F6F] italic">
+            PSNR unavailable (no clean reference for an uploaded image)
+          </p>
         </div>
       )}
     </div>

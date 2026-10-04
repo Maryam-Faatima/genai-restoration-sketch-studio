@@ -1,57 +1,40 @@
 import React, { useState } from 'react';
-import { Palette, Camera, UploadCloud, Download, RefreshCw, Check, Sparkles } from 'lucide-react';
+import { Palette, Camera, Download, RefreshCw } from 'lucide-react';
 import ImagePicker from '../components/ImagePicker';
 import CompareSlider from '../components/CompareSlider';
+import MetricsCards from '../components/MetricsCards';
 import WebcamModal from '../components/WebcamModal';
 import { postSketch } from '../api';
 
 const STYLES = [
-  { id: 1, name: 'Style 1', description: 'Light delicate tonal shading' },
-  { id: 2, name: 'Style 2', description: 'Bold deep contrast and rich contours' },
-  { id: 3, name: 'Style 3', description: 'Minimalist crisp outlines and highlights' },
+  { id: 1, name: 'Style 1', desc: 'Delicate tonal shading with soft graphite strokes' },
+  { id: 2, name: 'Style 2', desc: 'Deep contrast with bold boundary contours' },
+  { id: 3, name: 'Style 3', desc: 'Minimalist crisp outlines with clean negative space' },
 ];
 
 export default function FaceSketchWorkspace({ samples, onError }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [sourceType, setSourceType] = useState('upload'); // 'upload' | 'webcam'
+  const [style, setStyle] = useState(1);
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
-
-  // Style selector: 1 | 2 | 3 (default: 1)
-  const [selectedStyle, setSelectedStyle] = useState(1);
-
-  // Comparison view mode: 'side' (side-by-side) or 'wipe' (50/50 wipe/slider)
-  const [viewMode, setViewMode] = useState('side');
-
-  // Loading & In-flight
   const [loading, setLoading] = useState(false);
   const [abortController, setAbortController] = useState(null);
-
-  // Result
   const [result, setResult] = useState(null);
 
   const handleImageSelected = (file) => {
     setSelectedFile(file);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(URL.createObjectURL(file));
+    setPreviewUrl(file ? URL.createObjectURL(file) : null);
     setResult(null);
-  };
-
-  const handleWebcamCapture = (file) => {
-    setIsWebcamOpen(false);
-    handleImageSelected(file);
   };
 
   const handleGenerate = async () => {
     if (!selectedFile) {
-      onError('Please select or capture a portrait photo first.');
+      onError('Please select or upload a face photograph first.');
       return;
     }
 
-    if (abortController) {
-      abortController.abort();
-    }
-
+    if (abortController) abortController.abort();
     const controller = new AbortController();
     setAbortController(controller);
     setLoading(true);
@@ -60,13 +43,13 @@ export default function FaceSketchWorkspace({ samples, onError }) {
     try {
       const data = await postSketch({
         photoFile: selectedFile,
-        style: selectedStyle,
+        style,
         signal: controller.signal,
       });
       setResult(data);
     } catch (err) {
       if (err.name !== 'AbortError') {
-        onError(err.message || 'Face-to-sketch generation failed.');
+        onError(err.message || 'Sketch generation failed.');
       }
     } finally {
       setLoading(false);
@@ -75,55 +58,34 @@ export default function FaceSketchWorkspace({ samples, onError }) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full max-w-6xl mx-auto">
-      {/* Left Column: Controls (lg: 5 cols) */}
-      <div className="lg:col-span-5 space-y-5">
-        <div className="bg-gradient-to-br from-white via-purple-50/40 to-pink-50/40 rounded-2xl p-5 border border-studio-border shadow-card">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-100/70 text-purple-800 text-xs font-semibold mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-            <span>Conditional GAN Studio</span>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full max-w-7xl mx-auto">
+      {/* Left Column: Controls */}
+      <div className="lg:col-span-5 space-y-6">
+        <div className="rounded-3xl border border-[#2D2424]/10 bg-white p-6 space-y-3 shadow-scafos">
+          <div className="flex items-center justify-between">
+            <span className="font-handwriting text-3xl text-[#C24B38]">studio 04</span>
+            <span className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full border border-[#C24B38]/30 bg-[#C24B38]/10 text-[#C24B38]">
+              Conditional GAN
+            </span>
           </div>
-          <h2 className="text-xl font-bold text-studio-purple-950">Face-to-Sketch Generator</h2>
-          <p className="text-xs text-purple-900/70 mt-1">
-            Transform human portraits into high-contrast expressive artistic sketches with generative GAN synthesis.
+          <h2 className="text-2xl font-serif font-black text-[#2D2424] uppercase tracking-tight">
+            Face-to-Sketch Studio
+          </h2>
+          <p className="text-xs text-[#7C6F6F] leading-relaxed">
+            Synthesize expressive, tonal pencil drawings from portrait photographs across three distinct styles.
           </p>
 
-          {/* Source Capture Toggle: Upload photo OR Use webcam */}
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setSourceType('upload')}
-              className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${
-                sourceType === 'upload'
-                  ? 'border-purple-500 bg-white ring-2 ring-purple-300 shadow-sm text-purple-900'
-                  : 'border-purple-200/70 bg-purple-50/40 hover:bg-purple-100/50 text-purple-700'
-              }`}
-            >
-              <UploadCloud className="w-5 h-5 text-purple-600" />
-              <span className="text-xs font-bold">Upload photo</span>
-              <span className="text-[10px] text-purple-600/70">PNG, JPEG, WEBP</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setSourceType('webcam');
-                setIsWebcamOpen(true);
-              }}
-              className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${
-                sourceType === 'webcam'
-                  ? 'border-purple-500 bg-white ring-2 ring-purple-300 shadow-sm text-purple-900'
-                  : 'border-purple-200/70 bg-purple-50/40 hover:bg-purple-100/50 text-purple-700'
-              }`}
-            >
-              <Camera className="w-5 h-5 text-pink-600" />
-              <span className="text-xs font-bold">Use webcam</span>
-              <span className="text-[10px] text-pink-600/70">Live face capture</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsWebcamOpen(true)}
+            disabled={loading}
+            className="w-full mt-2 py-3 px-4 rounded-xl border border-[#2D2424]/15 hover:border-[#C24B38] bg-[#FFF7F4] hover:bg-white text-xs uppercase tracking-wider font-bold text-[#2D2424] transition-all flex items-center justify-center gap-2 shadow-xs"
+          >
+            <Camera className="w-4 h-4 text-[#C24B38]" />
+            <span>Capture with Camera</span>
+          </button>
         </div>
 
-        {/* Image Picker for Face Samples and Upload */}
         <ImagePicker
           selectedFile={selectedFile}
           previewUrl={previewUrl}
@@ -132,193 +94,147 @@ export default function FaceSketchWorkspace({ samples, onError }) {
           samples={samples}
           sampleType="face"
           disabled={loading}
-          customTitle="Source Portrait"
+          customTitle="Upload Face Portrait"
         />
 
-        {/* Style Selector with exactly three options named Style 1, Style 2, Style 3 */}
-        <div className="bg-white rounded-2xl border border-studio-border p-5 shadow-card space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-studio-purple-950 text-sm flex items-center gap-2">
-              <Palette className="w-4 h-4 text-purple-600" />
-              <span>Style Selector</span>
-            </h3>
-            <span className="text-[11px] text-purple-600/80 font-medium">Choose 1 of 3</span>
+        {/* Style Selector */}
+        <div className="rounded-3xl border border-[#2D2424]/10 bg-white p-6 space-y-4 shadow-scafos">
+          <h3 className="font-serif font-bold text-sm tracking-wide uppercase text-[#2D2424] flex items-center gap-2">
+            <Palette className="w-4 h-4 text-[#C24B38]" />
+            Select Sketch Style
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            {STYLES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setStyle(s.id)}
+                disabled={loading}
+                className={`py-3 px-2 text-xs uppercase tracking-wider font-bold rounded-xl transition-all text-center border ${
+                  style === s.id
+                    ? 'border-[#C24B38] bg-[#C24B38] text-white shadow-xs'
+                    : 'border-[#2D2424]/10 bg-[#FFF7F4] text-[#7C6F6F] hover:text-[#2D2424]'
+                }`}
+              >
+                {s.name}
+              </button>
+            ))}
           </div>
-
-          <div className="space-y-2.5">
-            {STYLES.map((style) => {
-              const isSelected = selectedStyle === style.id;
-              return (
-                <button
-                  key={style.id}
-                  type="button"
-                  onClick={() => setSelectedStyle(style.id)}
-                  disabled={loading}
-                  className={`w-full p-3 rounded-xl border flex items-center justify-between transition-all ${
-                    isSelected
-                      ? 'border-purple-500 bg-gradient-to-r from-purple-50 to-pink-50 ring-2 ring-purple-300 shadow-sm text-purple-950'
-                      : 'border-purple-200/70 bg-white hover:border-purple-300 hover:bg-purple-50/30 text-purple-900'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 text-left">
-                    <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                      isSelected ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700'
-                    }`}>
-                      {style.id}
-                    </span>
-                    <div>
-                      <div className="text-xs font-bold">{style.name}</div>
-                      <div className="text-[11px] text-purple-600/80">{style.description}</div>
-                    </div>
-                  </div>
-
-                  {isSelected && (
-                    <span className="px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-bold uppercase tracking-wider">
-                      Active
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+          <p className="text-xs text-[#7C6F6F] bg-[#FFF7F4] p-3 rounded-xl border border-[#2D2424]/5 leading-relaxed font-medium">
+            {STYLES.find((s) => s.id === style)?.desc}
+          </p>
         </div>
 
-        {/* Primary Action Button */}
+        {/* Generate Button */}
         <button
           type="button"
           onClick={handleGenerate}
           disabled={loading || !selectedFile}
-          className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white font-semibold text-sm shadow-md hover:shadow-lg hover:opacity-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-4 px-6 rounded-2xl bg-[#C24B38] hover:bg-[#A63827] text-white text-xs uppercase tracking-widest font-bold transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-md hover:-translate-y-0.5"
         >
           {loading ? (
             <>
               <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Generating artistic sketch...</span>
+              <span>Synthesizing Pencil Sketch...</span>
             </>
           ) : (
             <>
               <Palette className="w-4 h-4" />
-              <span>Generate sketch</span>
+              <span>Draw Portrait Sketch</span>
             </>
           )}
         </button>
       </div>
 
-      {/* Right Column: Results (lg: 7 cols) */}
+      {/* Right Column: Results */}
       <div className="lg:col-span-7">
-        <div className="bg-white rounded-2xl border border-studio-border p-6 shadow-card flex flex-col items-center justify-center min-h-[460px] space-y-6">
+        <div className="rounded-3xl border border-[#2D2424]/10 bg-white p-8 flex flex-col items-center justify-center min-h-[500px] shadow-scafos">
           {!result && !loading && (
-            <div className="text-center py-16 px-4 space-y-3">
-              <div className="w-16 h-16 rounded-full bg-purple-100/70 text-purple-600 flex items-center justify-center mx-auto">
-                <Palette className="w-8 h-8" />
+            <div className="text-center py-20 px-4 space-y-4 max-w-sm">
+              <div className="w-16 h-16 rounded-2xl bg-[#F8E7E3] border border-[#C24B38]/30 flex items-center justify-center mx-auto text-[#C24B38]">
+                <Palette className="w-7 h-7" />
               </div>
-              <h4 className="text-base font-bold text-studio-purple-950">Choose a portrait to begin</h4>
-              <p className="text-xs text-purple-700/70 max-w-sm mx-auto">
-                Select a portrait sample, upload your own photo, or snap a picture with your webcam.
+              <span className="font-handwriting text-3xl text-[#C24B38] block -mb-2">portrait art</span>
+              <h4 className="text-lg font-serif font-black text-[#2D2424] uppercase">
+                Choose a face photo to begin
+              </h4>
+              <p className="text-xs text-[#7C6F6F] leading-relaxed">
+                Upload a face portrait or snap a photo with your camera, select a style, and generate authentic pencil art.
               </p>
             </div>
           )}
 
           {loading && (
-            <div className="text-center py-20 space-y-3">
-              <RefreshCw className="w-10 h-10 text-purple-600 animate-spin mx-auto" />
-              <p className="text-sm font-semibold text-studio-purple-950">Synthesizing Sketch with conditional GAN...</p>
-              <p className="text-xs text-purple-600">Drawing outlines and contours according to {STYLES.find(s=>s.id===selectedStyle)?.name}</p>
+            <div className="text-center py-24 space-y-4">
+              <RefreshCw className="w-10 h-10 text-[#C24B38] animate-spin mx-auto" />
+              <span className="font-handwriting text-3xl text-[#C24B38] block -mb-2">sketching portrait</span>
+              <p className="text-sm font-serif font-bold uppercase tracking-widest text-[#2D2424]">
+                Synthesizing Pencil Strokes...
+              </p>
+              <p className="text-xs text-[#7C6F6F]">
+                Running conditional GAN on portrait photography
+              </p>
             </div>
           )}
 
           {result && !loading && (
-            <div className="w-full space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-purple-100 pb-3">
+            <div className="w-full space-y-6">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-[#2D2424]/10 pb-4">
                 <div>
-                  <h3 className="font-bold text-studio-purple-950 text-base">Results Comparison</h3>
-                  <p className="text-xs text-purple-600/80">Style: <strong className="text-purple-950">{result.style}</strong></p>
+                  <span className="font-handwriting text-2xl text-[#C24B38] block -mb-1">artistic result</span>
+                  <h3 className="font-serif font-bold text-lg text-[#2D2424]">Photo vs Pencil Sketch</h3>
                 </div>
-
-                {/* Toggle: Side-by-Side vs 50/50 Wipe */}
-                <div className="p-0.5 bg-purple-100 rounded-lg flex gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('side')}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
-                      viewMode === 'side'
-                        ? 'bg-white text-purple-900 shadow-sm'
-                        : 'text-purple-600 hover:text-purple-900'
-                    }`}
-                  >
-                    Side-by-Side
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('wipe')}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
-                      viewMode === 'wipe'
-                        ? 'bg-white text-purple-900 shadow-sm'
-                        : 'text-purple-600 hover:text-purple-900'
-                    }`}
-                  >
-                    50/50 Wipe
-                  </button>
-                </div>
+                <span className="text-xs uppercase tracking-widest font-mono font-bold px-3 py-1 rounded-full border border-[#C24B38]/30 bg-[#FFF7F4] text-[#C24B38]">
+                  {result.style}
+                </span>
               </div>
 
-              {/* View Rendering */}
-              {viewMode === 'side' ? (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col items-center bg-purple-50/30 rounded-xl p-2 border border-purple-100">
-                    <span className="text-[11px] font-bold text-purple-800 mb-1.5">Original photo</span>
-                    <img
-                      src={result.photo}
-                      alt="Original portrait"
-                      className="w-full aspect-square object-contain rounded-lg border border-purple-200 bg-white"
-                      style={{ imageRendering: 'auto' }}
-                    />
+              {/* Side-by-Side Images */}
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  ['Source Photo', result.photo],
+                  ['Synthesized Sketch', result.sketch],
+                ].map(([label, src]) => (
+                  <div key={label} className="rounded-2xl border border-[#2D2424]/10 bg-[#FFF7F4] p-3 space-y-2">
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-[#7C6F6F] block text-center">
+                      {label}
+                    </span>
+                    <div className="aspect-square w-full bg-white rounded-xl overflow-hidden flex items-center justify-center border border-[#2D2424]/10">
+                      <img
+                        src={src}
+                        alt={label}
+                        className="w-full h-full object-contain"
+                        style={{ imageRendering: 'auto' }}
+                      />
+                    </div>
                   </div>
-                  <div className="flex flex-col items-center bg-purple-50/30 rounded-xl p-2 border border-purple-100">
-                    <span className="text-[11px] font-bold text-purple-800 mb-1.5">Generated sketch</span>
-                    <img
-                      src={result.sketch}
-                      alt="Generated sketch"
-                      className="w-full aspect-square object-contain rounded-lg border border-purple-200 bg-white"
-                      style={{ imageRendering: 'auto' }}
-                    />
-                  </div>
-                </div>
-              ) : (
+                ))}
+              </div>
+
+              {/* Comparison Slider */}
+              <div className="space-y-3 pt-2">
+                <span className="text-[10px] uppercase tracking-widest font-mono text-[#7C6F6F] block text-center">
+                  Interactive Split Slider
+                </span>
                 <CompareSlider
                   leftImage={result.photo}
                   rightImage={result.sketch}
                   leftLabel="Original Photo"
-                  rightLabel="Generated Sketch"
+                  rightLabel="Sketch Output"
                 />
-              )}
-
-              {/* Inference Time Card */}
-              <div className="bg-purple-50/50 rounded-xl p-3.5 border border-purple-100 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-semibold text-purple-900 uppercase tracking-wide">
-                    Synthesis Performance
-                  </div>
-                  <div className="text-base font-bold text-studio-purple-950 mt-0.5">
-                    Inference time: {result.inference_ms} ms
-                  </div>
-                </div>
-                <span className="text-xs px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 font-semibold border border-purple-200">
-                  Style: {result.style}
-                </span>
               </div>
 
-              {/* Download Button */}
-              <div className="pt-2">
-                <a
-                  href={result.sketch}
-                  download="generated_sketch.png"
-                  className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-95 text-white font-semibold text-sm shadow-md transition-all flex items-center justify-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download sketch (PNG)</span>
-                </a>
-              </div>
+              <MetricsCards inferenceMs={result.inference_ms} />
+
+              <a
+                href={result.sketch}
+                download="face_sketch.png"
+                className="w-full py-4 px-6 rounded-2xl bg-[#FFF7F4] border-2 border-[#C24B38] hover:bg-[#C24B38] hover:text-white text-[#C24B38] text-xs uppercase tracking-widest font-bold transition-all duration-300 flex items-center justify-center gap-2 shadow-xs"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Sketch (PNG)</span>
+              </a>
             </div>
           )}
         </div>
@@ -328,7 +244,7 @@ export default function FaceSketchWorkspace({ samples, onError }) {
       <WebcamModal
         isOpen={isWebcamOpen}
         onClose={() => setIsWebcamOpen(false)}
-        onCapture={handleWebcamCapture}
+        onCapture={handleImageSelected}
         onError={onError}
       />
     </div>
